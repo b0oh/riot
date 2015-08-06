@@ -1,0 +1,6 @@
+{application, riot,
+ [{description, "riot"},
+  {vsn, "0.0.1"},
+  {registered, []},
+  {applications, [kernel, stdlib]},
+  {env, []}]}.
