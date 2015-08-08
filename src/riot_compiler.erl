@@ -5,10 +5,8 @@
 -record(st, {source, target, module, data, compiled, warns = [], errors = []}).
 
 file(Source, Target) ->
-    Mod = list_to_atom(filename:basename(Source, ".rt")),
-    St = do([tokenize, parse, gen, compile, save], #st{source = Source, target = Target, module = Mod}),
+    St = do([tokenize, parse, gen, compile, save], #st{source = Source, target = Target}),
     return(St).
-
 
 has_errors(#st{errors = []}) -> false;
 has_errors(#st{})            -> true.
@@ -65,8 +63,8 @@ parse(#st{data = Tokens, errors = Es} = St) ->
             St#st{errors = [Reason | Es]}
     end.
 
-gen(#st{data = Exprs, module = Mod, errors = Es} = St) ->
-    case riot_gen:forms(Exprs, Mod) of
+gen(#st{data = Exprs, errors = Es} = St) ->
+    case riot_gen:forms(Exprs) of
         {ok, Forms} ->
             St#st{data = Forms};
         {error, Reason} ->
