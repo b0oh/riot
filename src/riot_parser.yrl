@@ -32,8 +32,8 @@ expr -> list : '$1'.
 expr -> unit : '$1'.
 expr -> app : '$1'.
 
-list -> '[' ']' : {list, line('$1'), []}.
-list -> '[' seq ']' : {list, line('$1'), '$2'}.
+list -> '[' ']' : {list, ?line('$1'), []}.
+list -> '[' seq ']' : {list, ?line('$1'), '$2'}.
 
 seq -> expr : ['$1'].
 seq -> expr ',' seq : ['$1' | '$3'].
@@ -46,4 +46,4 @@ app_args -> expr app_args : ['$1' | '$2'].
 
 Erlang code.
 
-line(T) when is_tuple(T) -> element(2, T).
+-define(line(Node), element(2, Node)).
