@@ -1,43 +1,59 @@
 -module(riot_gen).
 -export([forms/1]).
+-export([integer_form/2, float_form/2, string_form/2, symbol_form/2, unit_form/1,
+         list_form/2, fn_form/3, app_form/3]).
 
-forms({module, {id, L, Module}, Toplevels}) ->
+forms({module, [{id, [Module], _}, Toplevels], #{line := L}}) ->
     Exports = exports(Toplevels),
     Forms = [toplevel(Toplevel) || Toplevel <- Toplevels],
     Ast = [{attribute, L, module, Module}, {attribute, L, export, Exports} | Forms],
     {ok, Ast}.
 
 exports(Bindings) ->
-    [{Name, args_length(Args)} || {binding, {symbol, _, Name}, Args, _} <- Bindings].
+    [{Name, args_length(Args)} || {binding, [{symbol, [Name], _}, Args, _], _} <- Bindings].
 
-args_length([{unit, _}]) -> 0;
+args_length([{unit, _, _}]) -> 0;
 args_length(Args) -> length(Args).
 
-toplevel({binding, {symbol, L, Name}, Args, Body}) ->
+toplevel({binding, [{symbol, [Name], _}, Args, Body], #{line := L}}) ->
     {function, L, Name, args_length(Args),
      [clause(L, Args, Body)]}.
 
-form({integer, _, _} = Expr) -> Expr;
-form({float, _, _} = Expr) -> Expr;
-form({string, _, _} = Expr) -> Expr;
-form({list, L, List}) -> list_form(L, List);
-form({symbol, L, Symbol}) -> {var, L, Symbol};
-form({unit, L}) -> {atom, L, unit};
-form({fn, L, Args, Body}) ->
-    {'fun', L, {clauses, [clause(L, Args, Body)]}};
-form({app, Applyable, Args}) ->
-    {call, line(Applyable), applyable(Applyable), [form(Arg) || Arg <- Args]}.
+form({Name, Args, Meta}) ->
+    Fun = list_to_atom(atom_to_list(Name) ++ "_form"),
+    apply(?MODULE, Fun, Args ++ [Meta]).
+
+integer_form(Integer, #{line := L}) ->
+    {integer, L, Integer}.
+
+float_form(Float, #{line := L}) ->
+    {float, L, Float}.
+
+string_form(String, #{line := L}) ->
+    {string, L, String}.
+
+symbol_form(Symbol, #{line := L}) ->
+    {var, L, Symbol}.
+
+unit_form(#{line := L}) ->
+    {atom, L, unit}.
+
+list_form([], #{line := L}) ->
+    {nil, L};
+list_form([{_, _, #{line := L}} = H | T], Meta) ->
+    {cons, L, form(H), list_form(T, Meta)}.
+
+fn_form(Args, Body, #{line := L}) ->
+    {'fun', L, {clauses, [clause(L, Args, Body)]}}.
+
+app_form({_, _, #{line := L}} = Applyable, Args, _) ->
+    {call, L, applyable(Applyable), [form(Arg) || Arg <- Args]}.
 
 clause(L, Args, Body) ->
-    {clause, L, [{var, ArgL, Symbol} || {symbol, ArgL, Symbol} <- Args], [], [form(Body)]}.
+    {clause, L, [form(Arg) || {Tag, _, _} = Arg <- Args, Tag /= unit], [], [form(Body)]}.
 
-list_form(L, []) -> {nil, L};
-list_form(_, [H | T]) ->
-    L = line(H),
-    {cons, L, form(H), list_form(L, T)}.
-
-applyable({symbol, L, Symbol}) -> {atom, L, Symbol};
-applyable({remote, L, {Module, Fun}}) -> {remote, L, {atom, L, Module},
-                                                     {atom, L, Fun}}.
-
-line(T) when is_tuple(T) -> element(2, T).
+applyable({symbol, Symbol, #{line := L}}) ->
+    {atom, L, Symbol};
+applyable({remote, [{Module, Fun}], #{line := L}}) ->
+    {remote, L, {atom, L, Module},
+                {atom, L, Fun}}.
