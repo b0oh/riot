@@ -2,10 +2,10 @@ Nonterminals
   root toplevels toplevel
   binding binding_args binding_arg
   app app_args
-  expr list seq.
+  expr fun list seq.
 
 Terminals
-   module end let '=' '[' ']' ',' integer float string id symbol remote unit.
+   module end let '=' '[' ']' ',' fn '->' integer float string id symbol remote unit.
 
 Rootsymbol root.
 
@@ -29,6 +29,7 @@ expr -> float : '$1'.
 expr -> string : '$1'.
 expr -> symbol : '$1'.
 expr -> list : '$1'.
+expr -> fun : '$1'.
 expr -> unit : '$1'.
 expr -> app : '$1'.
 
@@ -37,6 +38,8 @@ list -> '[' seq ']' : {list, line('$1'), '$2'}.
 
 seq -> expr : ['$1'].
 seq -> expr ',' seq : ['$1' | '$3'].
+
+fun -> fn binding_args '->' expr : {fn, line('$1'), '$2', '$4'}.
 
 app -> symbol app_args : {app, '$1', '$2'}.
 app -> remote app_args : {app, '$1', '$2'}.

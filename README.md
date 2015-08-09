@@ -6,6 +6,7 @@ hello.rt
 module Hello
   let say () = io.format "What?~n"
   let hello name = io.format "Hello, ~s.~n" [name]
+  let lambda () = fn x y -> [x, y]
 end
 ```
 
