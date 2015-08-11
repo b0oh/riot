@@ -1,7 +1,7 @@
 -module(riot_gen).
 -export([forms/1]).
 -export([integer_form/2, float_form/2, string_form/2, symbol_form/2, unit_form/1,
-         list_form/2, fn_form/3, app_form/3]).
+         list_form/2, let_form/3, fn_form/3, app_form/3]).
 
 forms({module, [{id, [Module], _}, Toplevels], #{line := L}}) ->
     Exports = exports(Toplevels),
@@ -43,17 +43,32 @@ list_form([], #{line := L}) ->
 list_form([{_, _, #{line := L}} = H | T], Meta) ->
     {cons, L, form(H), list_form(T, Meta)}.
 
+let_form(Bindings, Body, _) ->
+    matches(Bindings) ++ [form(Body)].
+
 fn_form(Args, Body, #{line := L}) ->
     {'fun', L, {clauses, [clause(L, Args, Body)]}}.
 
 app_form({_, _, #{line := L}} = Applyable, Args, _) ->
     {call, L, applyable(Applyable), args(Args)}.
 
-clause(L, Args, Body) ->
-    {clause, L, args(Args), [], [form(Body)]}.
+clause(L, Args, Body0) ->
+    Body1 =
+        case form(Body0) of
+            [_|_] = Exprs ->
+                Exprs;
+            Expr ->
+                [Expr]
+        end,
+    {clause, L, args(Args), [], Body1}.
 
 args(Args) ->
     [form(Arg) || {Tag, _, _} = Arg <- Args, Tag /= unit].
+
+matches([]) ->
+    [];
+matches([{{_, _, #{line := L}} = Left, Right} | Bindings]) ->
+    [{match, L, form(Left), form(Right)} | matches(Bindings)].
 
 applyable({symbol,[Symbol], #{line := L}}) ->
     {atom, L, Symbol};

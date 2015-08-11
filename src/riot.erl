@@ -27,3 +27,20 @@ gen(Tokens) ->
     io:format("AST~n~p~n", [Ast]),
     {ok, Forms} = riot_gen:forms(Ast),
     Forms.
+
+exprs(Str) ->
+    {ok, Ts, _} = erl_scan:string(Str),
+    {ok, Ast} = erl_parse:parse_exprs(Ts),
+    Ast.
+
+term(Str) ->
+    {ok, Ts, _} = erl_scan:string(Str),
+    {ok, Term} = erl_parse:parse_term(Ts),
+    erl_syntax:abstract(Term).
+
+parse_transform(Forms, _) ->
+    io:format("~p~n", [Forms]),
+    Forms.
+
+erl_file(FileName) ->
+    compile:file(FileName, [verbose, report_errors, report_warnings, {parse_transform, riot}]).

@@ -10,7 +10,7 @@ Symbol  = (({Alpha}|[_]|{Digit})+)
 IdPart  = ({Upper}{Alpha}+)
 Id      = ({IdPart}(\.{IdPart})*)
 Remote  = (({Id}|{Symbol})\.{Symbol})
-Kw      = (module|end|let|=|\[|\]|,|fn|->)
+Kw      = (module|end|let|=|in|\[|\]|,|fn|->)
 Ws      = [\s\n\r\t]
 
 Rules.
