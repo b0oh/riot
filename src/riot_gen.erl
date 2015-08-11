@@ -47,12 +47,15 @@ fn_form(Args, Body, #{line := L}) ->
     {'fun', L, {clauses, [clause(L, Args, Body)]}}.
 
 app_form({_, _, #{line := L}} = Applyable, Args, _) ->
-    {call, L, applyable(Applyable), [form(Arg) || Arg <- Args]}.
+    {call, L, applyable(Applyable), args(Args)}.
 
 clause(L, Args, Body) ->
-    {clause, L, [form(Arg) || {Tag, _, _} = Arg <- Args, Tag /= unit], [], [form(Body)]}.
+    {clause, L, args(Args), [], [form(Body)]}.
 
-applyable({symbol, Symbol, #{line := L}}) ->
+args(Args) ->
+    [form(Arg) || {Tag, _, _} = Arg <- Args, Tag /= unit].
+
+applyable({symbol,[Symbol], #{line := L}}) ->
     {atom, L, Symbol};
 applyable({remote, [{Module, Fun}], #{line := L}}) ->
     {remote, L, {atom, L, Module},
