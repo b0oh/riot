@@ -5,7 +5,16 @@ Nonterminals
   expr fun list seq.
 
 Terminals
-   module end let '=' '[' ']' ',' fn '->' integer float string id symbol remote unit.
+  %% Keywords
+  module end let fn
+
+  %% Literal tokens
+  integer float string symbol
+
+  %% Separators
+  '=' '[' ']' ',' '->'
+
+  id remote unit.
 
 Rootsymbol root.
 
@@ -48,6 +57,7 @@ app_args -> expr : ['$1'].
 app_args -> expr app_args : ['$1' | '$2'].
 
 Erlang code.
+
 -define(line(Node), element(2, Node)).
 
 make_ast(Name, Value) -> {Name, Value, #{}}.
