@@ -20,15 +20,15 @@ Rootsymbol root.
 
 root -> module id toplevels end : make_ast(module, [convert_to_ast('$2'), '$3'], ?line('$1')).
 
-toplevels -> toplevel : ['$1'].
 toplevels -> toplevel toplevels : ['$1' | '$2'].
+toplevels -> '$empty' : [].
 
 toplevel -> binding : '$1'.
 
 binding -> let symbol binding_args '=' expr : make_ast(binding, [convert_to_ast('$2'), '$3', '$5'], ?line('$1')).
 
-binding_args -> binding_arg : ['$1'].
 binding_args -> binding_arg binding_args : ['$1' | '$2'].
+binding_args -> '$empty' : [].
 
 binding_arg -> symbol : convert_to_ast('$1').
 binding_arg -> unit : convert_to_ast('$1').
