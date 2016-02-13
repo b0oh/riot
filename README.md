@@ -7,6 +7,11 @@ module Hello
   let say () = io.format "What?~n"
   let hello name = io.format "Hello, ~s.~n" [name]
   let lambda () = fn x y -> [x, y]
+  let let list = let [_x, y] = list in y
+  let lambda2 x =
+    let q = 1
+        f a = [a, x, q]
+    in f
 end
 ```
 
