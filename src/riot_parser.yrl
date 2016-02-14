@@ -4,11 +4,11 @@ Nonterminals
   let_statement let_bindings let_binding
   app app_args
   expr literal nested_literal
-  list seq literal_list literal_seq
+  list tuple seq literal_list literal_tuple literal_seq
   fun.
 
 Terminals
-  module end let '=' in '[' ']' ',' fn '->' integer float string id symbol remote unit.
+  module end let '=' in '[' ']' '(' ')' ',' fn '->' integer float string id symbol remote unit.
 
 Rootsymbol root.
 
@@ -29,6 +29,7 @@ binding_arg -> unit : convert_to_ast('$1').
 
 expr -> literal : '$1'.
 expr -> list : '$1'.
+expr -> tuple : '$1'.
 expr -> let_statement : '$1'.
 expr -> fun : '$1'.
 expr -> app : '$1'.
@@ -41,6 +42,8 @@ literal -> unit : convert_to_ast('$1').
 
 list -> '[' ']' : make_ast(list, [[]], ?line('$1')).
 list -> '[' seq ']' : make_ast(list, ['$2'], ?line('$1')).
+
+tuple -> '(' seq ')' : make_ast(tuple, ['$2'], ?line('$1')).
 
 seq -> expr : ['$1'].
 seq -> expr ',' seq : ['$1' | '$3'].
@@ -56,9 +59,12 @@ let_binding -> symbol binding_args '=' expr : {convert_to_ast('$1'),
 
 nested_literal -> literal : '$1'.
 nested_literal -> literal_list : '$1'.
+nested_literal -> literal_tuple : '$1'.
 
 literal_list -> '[' ']' : make_ast(list, [[]], ?line('$1')).
 literal_list -> '[' literal_seq ']' : make_ast(list, ['$2'], ?line('$1')).
+
+literal_tuple -> '(' literal_seq ')' : make_ast(tuple, ['$2'], ?line('$1')).
 
 literal_seq -> nested_literal : ['$1'].
 literal_seq -> nested_literal ',' literal_seq : ['$1' | '$3'].
