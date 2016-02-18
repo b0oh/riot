@@ -1,7 +1,7 @@
 -module(riot_gen).
 -export([forms/1]).
 -export([integer_form/2, float_form/2, string_form/2, symbol_form/2, unit_form/1,
-         list_form/2, let_form/3, fn_form/3, app_form/3]).
+         list_form/2, tuple_form/2, let_form/3, fn_form/3, app_form/3]).
 
 forms({module, [{id, [Module], _}, Toplevels], #{line := L}}) ->
     Exports = exports(Toplevels),
@@ -42,6 +42,9 @@ list_form([], #{line := L}) ->
     {nil, L};
 list_form([{_, _, #{line := L}} = H | T], Meta) ->
     {cons, L, form(H), list_form(T, Meta)}.
+
+tuple_form([{_, _, #{line := L}} | _] = Forms, _) ->
+    {tuple, L, [form(F) || F <- Forms]}.
 
 let_form(Bindings, Body, _) ->
     matches(Bindings) ++ [form(Body)].
