@@ -1,24 +1,3 @@
 # Riot
 
-**TODO: Add description**
-
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
-
-  1. Add `riot` to your list of dependencies in `mix.exs`:
-
-    ```elixir
-    def deps do
-      [{:riot, "~> 0.1.0"}]
-    end
-    ```
-
-  2. Ensure `riot` is started before your application:
-
-    ```elixir
-    def application do
-      [applications: [:riot]]
-    end
-    ```
-
+— fighting a reasoning entropy
