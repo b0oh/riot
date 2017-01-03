@@ -34,4 +34,4 @@ make_ast(Name, Value, L) -> {Name, Value, #{line => L}}.
 convert_to_ast({Name, L}) -> make_ast(Name, [], L);
 convert_to_ast({Name, L, Value}) -> make_ast(Name, [Value], L).
 
-extract_operator({_, L, Value}) -> make_ast(Value, [], L).
+extract_operator({_, L, Value}) -> make_ast(id, [Value], L).
