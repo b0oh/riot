@@ -1,44 +1,35 @@
 Definitions.
 
-Digit   = [0-9]
-Upper   = [A-Z]
-Lower   = [a-z]
-Alpha   = ({Upper}|{Lower})
-Integer = (-?{Digit}+)
-Float   = (-?{Digit}+\.{Digit}+)
-Symbol  = (({Alpha}|[_]|{Digit})+)
-IdPart  = ({Upper}{Alpha}+)
-Id      = ({IdPart}(\.{IdPart})*)
-Remote  = (({Id}|{Symbol})\.{Symbol})
-Kw      = (module|end|let|=|in|\[|\]|\(|\)|,|fn|->)
-Ws      = [\s\n\r\t]
+Digit     = [0-9]
+Integer   = (-?{Digit}+)
+Float     = (-?{Digit}+\.{Digit}+)
+Add       = (\+|-)
+Mul       = (\*|//|/|%)
+Comp      = (<|<=|==|/=|>=|>)
+Keyword   = (\(|\))
+White     = [\s\n\r\t]
 
 Rules.
 
-{Integer} : {token, {integer, TokenLine, list_to_integer(TokenChars)}}.
-{Float}   : {token, {float, TokenLine, list_to_float(TokenChars)}}.
-{Id}      : {token, {id, TokenLine, id(TokenChars)}}.
-{Kw}      : {token, {list_to_atom(TokenChars), TokenLine}}.
-{Symbol}  : {token, {symbol, TokenLine, list_to_atom(TokenChars)}}.
-{Remote}  : {token, {remote, TokenLine, remote(TokenChars)}}.
-\(\)      : {token, {unit, TokenLine}}.
-"[^"]*"   : {token, {string, TokenLine, lists:sublist(TokenChars, 2, TokenLen - 2)}}.
-{Ws}      : skip_token.
+{Integer} : make_token(integer, TokenChars, TokenLine).
+{Float}   : make_token(float, TokenChars, TokenLine).
+{Keyword} : make_token(keyword, TokenChars, TokenLine).
+{Add}     : make_token(add_op, TokenChars, TokenLine).
+{Mul}     : make_token(mul_op, TokenChars, TokenLine).
+{Comp}    : make_token(comp_op, TokenChars, TokenLine).
+{White}   : skip_token.
 
 Erlang code.
-
-id(Chars) ->
-    list_to_atom("Riot." ++ Chars).
-
-remote([C | _] = Chars) ->
-    [Fun | ModuleParts] = lists:reverse(string:tokens(Chars, ".")),
-
-    Module =
-        case {C == string:to_lower(C), lists:reverse(ModuleParts)} of
-            {true, [Part]} ->
-                list_to_atom(Part);
-            {false, Parts} ->
-                id(string:join(Parts, "."))
-        end,
-
-    {Module, list_to_atom(Fun)}.
+make_token(Token0, TokenChars, TokenLine) ->
+  Token1 =
+    case Token0 of
+      integer ->
+        {integer, TokenLine, list_to_integer(TokenChars)};
+      float ->
+        {float, TokenLine, list_to_float(TokenChars)};
+      keyword ->
+        {list_to_atom(TokenChars), TokenLine};
+      Op when Op == add_op orelse Op == mul_op orelse Op == comp_op ->
+        {Op, TokenLine, list_to_atom(TokenChars)}
+    end,
+  {token, Token1}.
